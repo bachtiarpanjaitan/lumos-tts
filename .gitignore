@@ -4,3 +4,4 @@ venv
 output/*
 __*
 .DS_Store
+*.wav
