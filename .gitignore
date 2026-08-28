@@ -5,3 +5,4 @@ output/*
 __*
 .DS_Store
 *.wav
+models/orpheus*
