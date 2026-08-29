@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import requests
+from groq import Groq
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -9,34 +9,29 @@ import uvicorn
 
 load_dotenv()
 app = FastAPI()
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 class TTSRequest(BaseModel):
     text: str
-    model: str = "gemini/gemini-3.1-flash-tts-preview/Aoede"
+    model: str = "canopylabs/orpheus-v1-english"
+    voice: str = "autumn"
 
 
 @app.post("/tts")
 async def tts_stream(req: TTSRequest):
-    response = requests.post(
-        os.getenv("TTS_API"),
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {os.getenv('TTS_API_KEY')}",
-        },
-        json={
-            "model": req.model,
-            "input": req.text,
-            "language": "Indonesian",
-        },
-        stream=True,
+    response = client.audio.speech.create(
+        model=req.model,
+        voice=req.voice,
+        response_format="wav",
+        input=req.text,
     )
 
     def gen():
-        for chunk in response.iter_content(chunk_size=8192):
+        for chunk in response.iter_bytes(8192):
             yield chunk
 
-    return StreamingResponse(gen(), media_type="audio/mpeg")
+    return StreamingResponse(gen(), media_type="audio/wav")
 
 
 if __name__ == "__main__":
