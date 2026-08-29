@@ -11,9 +11,12 @@ load_dotenv()
 app = FastAPI()
 
 
+TTS_MODEL = os.getenv("TTS_MODEL", "gemini/gemini-3.1-flash-tts-preview/Aoede")
+
+
 class TTSRequest(BaseModel):
     text: str
-    model: str = "gemini/gemini-3.1-flash-tts-preview/Aoede"
+    model: str = TTS_MODEL
 
 
 @app.post("/tts")
